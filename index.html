@@ -2,8 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYE 2026 Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="description" content="Live Global New Year 2026 Synchronization Network">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 style=%22background-color: %23000000;%22><rect width=%22100%22 height=%22100%22 fill=%22%23000%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2270%22>✨</text></svg>">
+    
+    <title>Aurora 2026 | Final Release</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,181 +25,309 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
-    
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { bg: '#000000', surface: '#121212', primary: '#D0BCFF', gold: '#FFD700' },
-                    animation: { 'pulse-slow': 'pulse 3s infinite' }
+                    colors: { 
+                        bg: '#000000', 
+                        primary: '#D0BCFF', 
+                        accent: '#381E72', 
+                        gold: '#FFD700',
+                        glass: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                    animation: {
+                        'pulse-gold': 'pulseGold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        pulseGold: {
+                            '0%, 100%': { opacity: 1, boxShadow: '0 0 20px rgba(255, 215, 0, 0.2)' },
+                            '50%': { opacity: .8, boxShadow: '0 0 5px rgba(255, 215, 0, 0.1)' }
+                        }
+                    }
                 }
             }
         }
     </script>
+
     <style>
-        body { background-color: #000; color: #fff; font-family: sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
-        .gold-border { border: 1px solid #FFD700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
-        /* Simple fade in animation */
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body { background-color: #000; color: #fff; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        
+        /* Utility */
+        .text-gold { color: #FFD700; }
+        
+        /* Background Dynamics */
+        .aurora-gradient {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            background: 
+                radial-gradient(circle at 10% 10%, rgba(56, 30, 114, 0.4) 0%, transparent 60%),
+                radial-gradient(circle at 90% 90%, rgba(208, 188, 255, 0.08) 0%, transparent 60%);
+        }
+
+        /* Component Styles */
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .active-gold-border {
+            border-color: rgba(255, 215, 0, 0.6);
+            background: linear-gradient(180deg, rgba(255,215,0,0.05) 0%, rgba(0,0,0,0.6) 100%);
+        }
+        
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            padding: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef, useMemo } = React;
         const DateTime = luxon.DateTime;
 
-        // Data: Top 25 Cities
+        // --- ICONS ---
+        const Icons = {
+            Sparkles: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/></svg>,
+            Clock: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            Check: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5"/></svg>
+        };
+
+        // --- PRO DATASET ---
         const CITIES = [
             { name: "Kiritimati", country: "Kiribati", zone: "Pacific/Kiritimati", region: "Oceania" },
+            { name: "Chatham Is.", country: "New Zealand", zone: "Pacific/Chatham", region: "Oceania" },
             { name: "Auckland", country: "New Zealand", zone: "Pacific/Auckland", region: "Oceania" },
             { name: "Sydney", country: "Australia", zone: "Australia/Sydney", region: "Oceania" },
             { name: "Tokyo", country: "Japan", zone: "Asia/Tokyo", region: "Asia" },
             { name: "Seoul", country: "South Korea", zone: "Asia/Seoul", region: "Asia" },
-            { name: "Beijing", country: "China", zone: "Asia/Shanghai", region: "Asia" },
-            { name: "Manila", country: "Philippines", zone: "Asia/Manila", region: "Asia" },
             { name: "Singapore", country: "Singapore", zone: "Asia/Singapore", region: "Asia" },
-            { name: "Bangkok", country: "Thailand", zone: "Asia/Bangkok", region: "Asia" },
+            { name: "Kathmandu", country: "Nepal", zone: "Asia/Kathmandu", region: "Asia" },
             { name: "New Delhi", country: "India", zone: "Asia/Kolkata", region: "Asia" },
             { name: "Dubai", country: "UAE", zone: "Asia/Dubai", region: "Asia" },
             { name: "Moscow", country: "Russia", zone: "Europe/Moscow", region: "Europe" },
-            { name: "Istanbul", country: "Turkey", zone: "Europe/Istanbul", region: "Europe" },
-            { name: "Cairo", country: "Egypt", zone: "Africa/Cairo", region: "Africa" },
             { name: "Paris", country: "France", zone: "Europe/Paris", region: "Europe" },
-            { name: "Berlin", country: "Germany", zone: "Europe/Berlin", region: "Europe" },
             { name: "London", country: "UK", zone: "Europe/London", region: "Europe" },
-            { name: "Rio de Janeiro", country: "Brazil", zone: "America/Sao_Paulo", region: "Americas" },
+            { name: "Rio", country: "Brazil", zone: "America/Sao_Paulo", region: "Americas" },
             { name: "New York", country: "USA", zone: "America/New_York", region: "Americas" },
-            { name: "Toronto", country: "Canada", zone: "America/Toronto", region: "Americas" },
-            { name: "Chicago", country: "USA", zone: "America/Chicago", region: "Americas" },
-            { name: "Mexico City", country: "Mexico", zone: "America/Mexico_City", region: "Americas" },
-            { name: "Denver", country: "USA", zone: "America/Denver", region: "Americas" },
             { name: "Los Angeles", country: "USA", zone: "America/Los_Angeles", region: "Americas" },
             { name: "Honolulu", country: "USA", zone: "Pacific/Honolulu", region: "Oceania" }
         ];
 
-        // Component: Timer Logic
-        const CityCard = ({ city, onCelebrate }) => {
-            const [time, setTime] = useState({ h: '--', m: '--', s: '--', isHere: false });
-            
-            useEffect(() => {
-                const timer = setInterval(() => {
-                    const now = DateTime.now().setZone(city.zone);
-                    const target = DateTime.fromISO("2026-01-01T00:00:00", { zone: city.zone });
-                    const diff = target.diff(now, ['hours', 'minutes', 'seconds', 'milliseconds']);
+        // --- CITY CARD ---
+        const CityCard = ({ city, globalNow, onCelebrate }) => {
+            const hasCelebrated = useRef(false);
 
-                    if (diff.milliseconds <= 0) {
-                        setTime({ h: '00', m: '00', s: '00', isHere: true });
-                        if (!time.isHere) onCelebrate(city.name); // Trigger once
-                    } else {
-                        setTime({
-                            h: String(diff.hours).padStart(2, '0'),
-                            m: String(diff.minutes).padStart(2, '0'),
-                            s: String(Math.floor(diff.seconds)).padStart(2, '0'),
-                            isHere: false
-                        });
-                    }
-                }, 1000);
-                return () => clearInterval(timer);
-            }, [city.zone]);
+            const { display, isHere } = useMemo(() => {
+                const target = DateTime.fromISO("2026-01-01T00:00:00", { zone: city.zone });
+                const diffSeconds = target.diff(globalNow, 'seconds').seconds;
+                
+                if (diffSeconds <= 0) {
+                    return { display: { h:'00', m:'00', s:'00' }, isHere: true };
+                }
+
+                const h = Math.floor(diffSeconds / 3600);
+                const m = Math.floor((diffSeconds % 3600) / 60);
+                const s = Math.floor(diffSeconds % 60);
+
+                return {
+                    display: {
+                        h: String(h).padStart(2, '0'),
+                        m: String(m).padStart(2, '0'),
+                        s: String(s).padStart(2, '0')
+                    },
+                    isHere: false
+                };
+            }, [city.zone, globalNow]); 
+
+            useEffect(() => {
+                if (isHere && !hasCelebrated.current) {
+                    hasCelebrated.current = true;
+                    onCelebrate(city.name);
+                }
+            }, [isHere, city.name, onCelebrate]);
 
             return (
-                <div className={`glass p-4 rounded-xl relative transition-all duration-300 fade-in ${time.isHere ? 'bg-black gold-border' : ''}`}>
-                    <div className="flex justify-between items-center mb-3">
+                <div className={`glass-panel p-5 rounded-2xl relative transition-all duration-300 ${isHere ? 'active-gold-border' : 'hover:border-primary/30'}`}>
+                    <div className="flex justify-between items-start mb-5">
                         <div>
-                            <h3 className="font-bold text-lg text-white">{city.name}</h3>
-                            <p className="text-xs text-gray-400">{city.country}</p>
+                            <h3 className={`text-lg font-bold leading-tight ${isHere ? 'text-gold' : 'text-white'}`}>
+                                {city.name}
+                            </h3>
+                            <div className="text-[10px] text-gray-400 font-mono uppercase tracking-widest mt-1">
+                                {city.country}
+                            </div>
                         </div>
-                        {time.isHere ? <span className="text-2xl">🎆</span> : <span className="text-xl">⏳</span>}
+                        {isHere ? 
+                            <div className="bg-gold/90 text-black px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse-gold shadow-[0_0_10px_rgba(255,215,0,0.4)]">
+                                <Icons.Check /> <span className="text-[10px] font-bold">2026</span>
+                            </div> 
+                            : 
+                            <div className="text-primary/40"><Icons.Clock /></div>
+                        }
                     </div>
 
-                    <div className="flex gap-2 text-center justify-center">
-                        <TimeBox val={time.h} label="HR" active={time.isHere} />
-                        <TimeBox val={time.m} label="MIN" active={time.isHere} />
-                        <TimeBox val={time.s} label="SEC" active={time.isHere} />
+                    <div className="flex justify-between items-baseline text-center px-1">
+                        <TimeUnit val={display.h} label="HRS" active={isHere} />
+                        <span className="text-xl text-gray-600 font-light mx-1">:</span>
+                        <TimeUnit val={display.m} label="MIN" active={isHere} />
+                        <span className="text-xl text-gray-600 font-light mx-1">:</span>
+                        <TimeUnit val={display.s} label="SEC" active={isHere} />
                     </div>
-                    
-                    {time.isHere && (
-                        <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-xl animate-pulse-slow">
-                            <span className="text-gold font-bold text-xl tracking-widest">2026 ARRIVED!</span>
-                        </div>
-                    )}
                 </div>
             );
         };
 
-        const TimeBox = ({ val, label, active }) => (
-            <div className={`p-2 rounded w-16 ${active ? 'bg-gold/20' : 'bg-white/5'}`}>
-                <div className={`text-xl font-mono font-bold ${active ? 'text-gold' : 'text-white'}`}>{val}</div>
-                <div className="text-[10px] text-gray-500">{label}</div>
+        const TimeUnit = ({ val, label, active }) => (
+            <div className="flex flex-col items-center flex-1">
+                <div className={`text-3xl font-mono font-bold tracking-tighter ${active ? 'text-gold drop-shadow-[0_0_8px_rgba(255,215,0,0.5)]' : 'text-white'}`}>
+                    {val}
+                </div>
+                <div className="text-[9px] text-gray-500 font-bold tracking-widest mt-1 scale-90">{label}</div>
             </div>
         );
 
-        // Component: Main App
+        // --- APP ROOT ---
         const App = () => {
+            const [timeMode, setTimeMode] = useState('IST'); // 'IST' or 'UTC'
+            const [ticker, setTicker] = useState(0); 
             const [filter, setFilter] = useState('All');
             const [celebrating, setCelebrating] = useState(null);
+            
+            const celebrationRef = useRef(null);
+            
+            // GLOBAL CLOCK SOURCE (Derived State)
+            const globalNow = useMemo(() => {
+                // Canonical zone names: 'Asia/Kolkata' or 'UTC'
+                const zone = timeMode === 'IST' ? 'Asia/Kolkata' : 'UTC';
+                return DateTime.now().setZone(zone);
+            }, [ticker, timeMode]);
+
+            // HEARTBEAT
+            useEffect(() => {
+                const timer = setInterval(() => setTicker(t => t + 1), 1000);
+                return () => clearInterval(timer);
+            }, []);
 
             const handleCelebration = (cityName) => {
-                setCelebrating(cityName);
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#FFD700', '#D0BCFF', '#FFFFFF']
+                celebrationRef.current = cityName; 
+                setCelebrating(cityName);          
+
+                confetti({ 
+                    particleCount: 150, 
+                    spread: 100, 
+                    origin: { y: 0.6 }, 
+                    colors: ['#FFD700', '#ffffff', '#D0BCFF'],
+                    disableForReducedMotion: true
                 });
-                setTimeout(() => setCelebrating(null), 5000);
+
+                setTimeout(() => {
+                    if (celebrationRef.current === cityName) setCelebrating(null);
+                }, 6000);
             };
 
             const filteredCities = filter === 'All' ? CITIES : CITIES.filter(c => c.region === filter);
 
             return (
-                <div className="min-h-screen px-4 pb-12 max-w-6xl mx-auto">
+                <div className="min-h-screen pb-20 relative selection:bg-gold selection:text-black">
+                    <div className="aurora-gradient"></div>
+                    
                     {/* Header */}
-                    <header className="py-6 border-b border-white/10 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <span className="text-3xl">✨</span>
-                            <div>
-                                <h1 className="text-2xl font-bold">Aurora <span className="text-primary">2026</span></h1>
+                    <nav className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/10 px-6 py-4 mb-8">
+                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                            
+                            {/* Logo & Mode Switch */}
+                            <div className="flex items-center justify-between w-full md:w-auto gap-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white shadow-lg">
+                                        <Icons.Sparkles />
+                                    </div>
+                                    <h1 className="text-xl font-bold tracking-tight">Aurora <span className="text-primary">2026</span></h1>
+                                </div>
+
+                                {/* THE TOGGLE */}
+                                <div 
+                                    className="toggle-switch"
+                                    onClick={() => setTimeMode(prev => prev === 'IST' ? 'UTC' : 'IST')}
+                                    role="button"
+                                >
+                                    <div className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all ${timeMode === 'IST' ? 'bg-primary text-black' : 'text-gray-400'}`}>IST</div>
+                                    <div className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all ${timeMode === 'UTC' ? 'bg-primary text-black' : 'text-gray-400'}`}>UTC</div>
+                                </div>
+                            </div>
+                            
+                            {/* Filter Chips */}
+                            <div className="flex gap-2 bg-white/5 p-1 rounded-full overflow-x-auto max-w-full no-scrollbar">
+                                {['All', 'Asia', 'Europe', 'Oceania', 'Americas'].map(region => (
+                                    <button
+                                        key={region}
+                                        onClick={() => setFilter(region)}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
+                                            filter === region 
+                                            ? 'bg-primary text-black shadow-[0_0_10px_rgba(208,188,255,0.4)]' 
+                                            : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                        }`}
+                                    >
+                                        {region}
+                                    </button>
+                                ))}
                             </div>
                         </div>
-                        
-                        {/* Filter Tabs */}
-                        <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2">
-                            {['All', 'Asia', 'Europe', 'Oceania', 'Americas'].map(region => (
-                                <button 
-                                    key={region}
-                                    onClick={() => setFilter(region)}
-                                    className={`px-4 py-2 rounded-full text-sm whitespace-nowrap border ${filter === region ? 'bg-primary text-black border-primary font-bold' : 'bg-transparent border-white/20 text-gray-400'}`}
-                                >
-                                    {region}
-                                </button>
-                            ))}
-                        </div>
-                    </header>
+                    </nav>
 
                     {/* Celebration Overlay */}
                     {celebrating && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none bg-black/60 backdrop-blur-sm fade-in">
-                            <div className="text-center">
-                                <h1 className="text-5xl md:text-7xl font-black text-gold drop-shadow-lg mb-2">HAPPY NEW YEAR</h1>
-                                <h2 className="text-3xl text-white">{celebrating}!</h2>
+                        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none">
+                            <div className="bg-black/90 backdrop-blur-xl p-8 rounded-3xl border border-gold/30 shadow-[0_0_50px_rgba(255,215,0,0.2)] text-center animate-pulse-gold">
+                                <h1 className="text-5xl md:text-7xl font-black text-gold mb-2 leading-none">
+                                    HAPPY<br/>NEW YEAR
+                                </h1>
+                                <div className="text-2xl text-white font-mono tracking-widest uppercase mt-4">
+                                    {celebrating}
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {filteredCities.map((city, index) => (
-                            <CityCard key={city.name + index} city={city} onCelebrate={handleCelebration} />
-                        ))}
-                    </div>
-                    
-                    <footer className="text-center mt-12 text-gray-600 text-sm">
-                        Live Global Sync • Dec 31, 2025
+                    {/* Main Grid */}
+                    <main className="max-w-7xl mx-auto px-4 md:px-6">
+                        <div className="flex items-center gap-2 mb-6 ml-1 opacity-70">
+                            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                            <span className="text-xs font-mono uppercase tracking-widest text-gray-400">
+                                Ref: {timeMode === 'IST' ? 'Asia/Kolkata' : 'UTC'} • Events occur at local midnight
+                            </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                            {filteredCities.map((city) => (
+                                <CityCard 
+                                    key={`${city.zone}-${city.name}`} 
+                                    city={city} 
+                                    globalNow={globalNow} 
+                                    onCelebrate={handleCelebration} 
+                                />
+                            ))}
+                        </div>
+                    </main>
+
+                    <footer className="mt-20 py-8 text-center border-t border-white/5">
+                        <p className="text-gray-600 text-[10px] uppercase tracking-widest">
+                            Final Release v2.2 • {timeMode} Sync Active
+                        </p>
                     </footer>
                 </div>
             );
@@ -196,4 +338,3 @@
     </script>
 </body>
 </html>
-
