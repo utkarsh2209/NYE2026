@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aurora 2026 | Live Tracker</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { bg: '#000000', surface: '#121212', primary: '#D0BCFF', accent: '#381E72', gold: '#FFD700' },
+                    animation: { 'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
+                }
+            }
+        }
+    </script>
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "framer-motion": "https://esm.sh/framer-motion@10.16.4",
+            "luxon": "https://esm.sh/luxon@3.4.4",
+            "canvas-confetti": "https://esm.sh/canvas-confetti@1.9.2",
+            "lucide-react": "https://esm.sh/lucide-react@0.294.0"
+        }
+    }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { background-color: #000; color: #fff; -webkit-tap-highlight-color: transparent; }
+        .glass { background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glow-text { text-shadow: 0 0 20px rgba(208, 188, 255, 0.5); }
+        .gold-glow { box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); border-color: rgba(255, 215, 0, 0.5); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { motion, AnimatePresence } from 'framer-motion';
+        import { DateTime } from 'luxon';
+        import confetti from 'canvas-confetti';
+        import { Clock, Globe, MapPin, PartyPopper, Zap } from 'lucide-react';
+
+        // --- DATA ---
+        const cities = [
+            { name: "Kiritimati", country: "Kiribati", zone: "Pacific/Kiritimati", region: "Oceania" },
+            { name: "Auckland", country: "New Zealand", zone: "Pacific/Auckland", region: "Oceania" },
+            { name: "Sydney", country: "Australia", zone: "Australia/Sydney", region: "Oceania" },
+            { name: "Tokyo", country: "Japan", zone: "Asia/Tokyo", region: "Asia" },
+            { name: "Seoul", country: "South Korea", zone: "Asia/Seoul", region: "Asia" },
+            { name: "Shanghai", country: "China", zone: "Asia/Shanghai", region: "Asia" },
+            { name: "New Delhi", country: "India", zone: "Asia/Kolkata", region: "Asia" },
+            { name: "Dubai", country: "UAE", zone: "Asia/Dubai", region: "Asia" },
+            { name: "Moscow", country: "Russia", zone: "Europe/Moscow", region: "Europe" },
+            { name: "Paris", country: "France", zone: "Europe/Paris", region: "Europe" },
+            { name: "London", country: "UK", zone: "Europe/London", region: "Europe" },
+            { name: "New York", country: "USA", zone: "America/New_York", region: "Americas" },
+            { name: "Los Angeles", country: "USA", zone: "America/Los_Angeles", region: "Americas" },
+            { name: "Honolulu", country: "USA", zone: "Pacific/Honolulu", region: "Oceania" },
+        ];
+
+        // --- HOOKS ---
+        const useCountdown = (zone) => {
+            const [time, setTime] = useState({ h:0, m:0, s:0, isHere: false });
+            
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    const now = DateTime.now().setZone(zone);
+                    const target = DateTime.fromISO("2026-01-01T00:00:00", { zone });
+                    const diff = target.diff(now, ['hours', 'minutes', 'seconds', 'milliseconds']);
+
+                    if (diff.milliseconds <= 0) {
+                        setTime({ h:0, m:0, s:0, isHere: true });
+                    } else {
+                        setTime({
+                            h: String(diff.hours).padStart(2, '0'),
+                            m: String(diff.minutes).padStart(2, '0'),
+                            s: String(Math.floor(diff.seconds)).padStart(2, '0'),
+                            isHere: false
+                        });
+                    }
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [zone]);
+            return time;
+        };
+
+        // --- COMPONENTS ---
+        const CityCard = ({ city, onCelebrate }) => {
+            const { h, m, s, isHere } = useCountdown(city.zone);
+
+            useEffect(() => {
+                if (isHere) onCelebrate(city.name);
+            }, [isHere]);
+
+            return (
+                <motion.div 
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`glass p-5 rounded-2xl relative overflow-hidden transition-all duration-300 ${isHere ? 'bg-black gold-glow' : 'hover:bg-white/5'}`}
+                >
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 className="font-bold text-lg flex items-center gap-2">
+                                {isHere ? <PartyPopper className="text-gold w-5 h-5 animate-bounce" /> : <MapPin className="text-primary w-4 h-4" />}
+                                {city.name}
+                            </h3>
+                            <p className="text-xs text-gray-400 pl-6">{city.country}</p>
+                        </div>
+                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${isHere ? 'bg-gold text-black animate-pulse' : 'bg-white/10 text-gray-400'}`}>
+                            {isHere ? '2026 ARRIVED' : city.region.toUpperCase()}
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                        {[
+                            { val: h, label: 'HRS' },
+                            { val: m, label: 'MIN' },
+                            { val: s, label: 'SEC' }
+                        ].map((item, idx) => (
+                            <div key={idx} className="bg-black/40 rounded-lg p-2">
+                                <div className={`text-2xl font-mono font-bold ${isHere ? 'text-gold' : 'text-white'}`}>
+                                    {item.val}
+                                </div>
+                                <div className="text-[9px] text-gray-500">{item.label}</div>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+            );
+        };
+
+        const App = () => {
+            const [filter, setFilter] = useState('All');
+            const [celebrating, setCelebrating] = useState(null);
+
+            const handleCelebrate = (name) => {
+                if (celebrating !== name) {
+                    setCelebrating(name);
+                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#FFD700', '#D0BCFF'] });
+                    setTimeout(() => setCelebrating(null), 5000);
+                }
+            };
+
+            const filteredCities = filter === 'All' ? cities : cities.filter(c => c.region === filter);
+
+            return (
+                <div className="min-h-screen pb-20 px-4 md:px-8 max-w-7xl mx-auto">
+                    {/* Header */}
+                    <header className="py-6 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-white/10 mb-8">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-gradient-to-tr from-primary to-accent rounded-xl">
+                                <Zap className="text-white w-6 h-6" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold tracking-tighter">Aurora <span className="text-primary">2026</span></h1>
+                                <p className="text-xs text-gray-400">Global Synchronization Network</p>
+                            </div>
+                        </div>
+                        
+                        {/* Filters */}
+                        <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 scrollbar-hide">
+                            {['All', 'Asia', 'Europe', 'Oceania', 'Americas'].map(region => (
+                                <button
+                                    key={region}
+                                    onClick={() => setFilter(region)}
+                                    className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-colors ${filter === region ? 'bg-primary text-black font-bold' : 'glass text-gray-400'}`}
+                                >
+                                    {region}
+                                </button>
+                            ))}
+                        </div>
+                    </header>
+
+                    {/* Celebration Overlay */}
+                    <AnimatePresence>
+                        {celebrating && (
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                                className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+                            >
+                                <div className="glass bg-black/80 p-8 rounded-3xl border-gold text-center">
+                                    <h2 className="text-5xl font-black text-gold mb-2 drop-shadow-lg">HAPPY NEW YEAR</h2>
+                                    <h3 className="text-3xl text-white">{celebrating}!</h3>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Grid */}
+                    <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <AnimatePresence>
+                            {filteredCities.map(city => (
+                                <CityCard key={city.name} city={city} onCelebrate={handleCelebrate} />
+                            ))}
+                        </AnimatePresence>
+                    </motion.div>
+                    
+                    <footer className="mt-12 text-center text-gray-600 text-sm">
+                        <p>Designed on Pixel 10 Pro XL. Running on Edge.</p>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
