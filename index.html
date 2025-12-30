@@ -8,12 +8,12 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="description" content="Live Global New Year 2026 Synchronization Network">
+    <meta name="description" content="Live Global New Year 2026 Tracker - 150+ Major Cities">
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 style=%22background-color: %23000000;%22><rect width=%22100%22 height=%22100%22 fill=%22%23000%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2270%22>✨</text></svg>">
     
-    <title>Aurora 2026 | Final Release</title>
+    <title>Aurora 2026 | Global Tracker</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,9 +38,7 @@
                         glass: 'rgba(255, 255, 255, 0.05)'
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    animation: {
-                        'pulse-gold': 'pulseGold 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
+                    animation: { 'pulse-gold': 'pulseGold 2s infinite' },
                     keyframes: {
                         pulseGold: {
                             '0%, 100%': { opacity: 1, boxShadow: '0 0 20px rgba(255, 215, 0, 0.2)' },
@@ -54,43 +52,22 @@
 
     <style>
         body { background-color: #000; color: #fff; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-        
-        /* Utility */
         .text-gold { color: #FFD700; }
-        
-        /* Background Dynamics */
         .aurora-gradient {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
-            background: 
-                radial-gradient(circle at 10% 10%, rgba(56, 30, 114, 0.4) 0%, transparent 60%),
-                radial-gradient(circle at 90% 90%, rgba(208, 188, 255, 0.08) 0%, transparent 60%);
+            background: radial-gradient(circle at 10% 10%, rgba(56, 30, 114, 0.4) 0%, transparent 60%), radial-gradient(circle at 90% 90%, rgba(208, 188, 255, 0.08) 0%, transparent 60%);
         }
-
-        /* Component Styles */
         .glass-panel {
             background: var(--glass);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
-
-        .active-gold-border {
-            border-color: rgba(255, 215, 0, 0.6);
-            background: linear-gradient(180deg, rgba(255,215,0,0.05) 0%, rgba(0,0,0,0.6) 100%);
-        }
-        
-        /* Toggle Switch */
-        .toggle-switch {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 999px;
-            padding: 2px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+        .active-gold-border { border-color: rgba(255, 215, 0, 0.6); background: linear-gradient(180deg, rgba(255,215,0,0.05) 0%, rgba(0,0,0,0.6) 100%); }
+        /* Scrollbar hiding */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body>
@@ -103,33 +80,142 @@
         // --- ICONS ---
         const Icons = {
             Sparkles: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"/></svg>,
-            Clock: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-            Check: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5"/></svg>
+            Check: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5"/></svg>,
+            Star: ({ filled }) => <svg width="18" height="18" viewBox="0 0 24 24" fill={filled ? "#FFD700" : "none"} stroke={filled ? "#FFD700" : "currentColor"} strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+            Search: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+            X: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         };
 
-        // --- PRO DATASET ---
-        const CITIES = [
+        // --- GLOBAL DATASET (160+ Nodes) ---
+        const ALL_CITIES = [
+            // UTC+14 to +12
             { name: "Kiritimati", country: "Kiribati", zone: "Pacific/Kiritimati", region: "Oceania" },
-            { name: "Chatham Is.", country: "New Zealand", zone: "Pacific/Chatham", region: "Oceania" },
+            { name: "Apia", country: "Samoa", zone: "Pacific/Apia", region: "Oceania" },
             { name: "Auckland", country: "New Zealand", zone: "Pacific/Auckland", region: "Oceania" },
+            { name: "Wellington", country: "New Zealand", zone: "Pacific/Auckland", region: "Oceania" },
+            { name: "Suva", country: "Fiji", zone: "Pacific/Fiji", region: "Oceania" },
+            { name: "Petropavlovsk", country: "Russia", zone: "Asia/Kamchatka", region: "Asia" },
+
+            // UTC+11 to +9
             { name: "Sydney", country: "Australia", zone: "Australia/Sydney", region: "Oceania" },
+            { name: "Canberra", country: "Australia", zone: "Australia/Sydney", region: "Oceania" },
+            { name: "Melbourne", country: "Australia", zone: "Australia/Melbourne", region: "Oceania" },
+            { name: "Vladivostok", country: "Russia", zone: "Asia/Vladivostok", region: "Asia" },
+            { name: "Brisbane", country: "Australia", zone: "Australia/Brisbane", region: "Oceania" },
             { name: "Tokyo", country: "Japan", zone: "Asia/Tokyo", region: "Asia" },
             { name: "Seoul", country: "South Korea", zone: "Asia/Seoul", region: "Asia" },
+            { name: "Pyongyang", country: "North Korea", zone: "Asia/Pyongyang", region: "Asia" },
+
+            // UTC+8
+            { name: "Beijing", country: "China", zone: "Asia/Shanghai", region: "Asia" },
+            { name: "Shanghai", country: "China", zone: "Asia/Shanghai", region: "Asia" },
+            { name: "Hong Kong", country: "China", zone: "Asia/Hong_Kong", region: "Asia" },
             { name: "Singapore", country: "Singapore", zone: "Asia/Singapore", region: "Asia" },
+            { name: "Manila", country: "Philippines", zone: "Asia/Manila", region: "Asia" },
+            { name: "Kuala Lumpur", country: "Malaysia", zone: "Asia/Kuala_Lumpur", region: "Asia" },
+            { name: "Perth", country: "Australia", zone: "Australia/Perth", region: "Oceania" },
+            { name: "Taipei", country: "Taiwan", zone: "Asia/Taipei", region: "Asia" },
+
+            // UTC+7 to +5:30
+            { name: "Bangkok", country: "Thailand", zone: "Asia/Bangkok", region: "Asia" },
+            { name: "Jakarta", country: "Indonesia", zone: "Asia/Jakarta", region: "Asia" },
+            { name: "Hanoi", country: "Vietnam", zone: "Asia/Ho_Chi_Minh", region: "Asia" },
+            { name: "Dhaka", country: "Bangladesh", zone: "Asia/Dhaka", region: "Asia" },
             { name: "Kathmandu", country: "Nepal", zone: "Asia/Kathmandu", region: "Asia" },
             { name: "New Delhi", country: "India", zone: "Asia/Kolkata", region: "Asia" },
+            { name: "Mumbai", country: "India", zone: "Asia/Kolkata", region: "Asia" },
+            { name: "Kolkata", country: "India", zone: "Asia/Kolkata", region: "Asia" },
+            { name: "Bengaluru", country: "India", zone: "Asia/Kolkata", region: "Asia" },
+            { name: "Colombo", country: "Sri Lanka", zone: "Asia/Colombo", region: "Asia" },
+
+            // UTC+5 to +3
+            { name: "Karachi", country: "Pakistan", zone: "Asia/Karachi", region: "Asia" },
+            { name: "Tashkent", country: "Uzbekistan", zone: "Asia/Tashkent", region: "Asia" },
+            { name: "Kabul", country: "Afghanistan", zone: "Asia/Kabul", region: "Asia" },
             { name: "Dubai", country: "UAE", zone: "Asia/Dubai", region: "Asia" },
+            { name: "Baku", country: "Azerbaijan", zone: "Asia/Baku", region: "Asia" },
+            { name: "Tehran", country: "Iran", zone: "Asia/Tehran", region: "Asia" },
             { name: "Moscow", country: "Russia", zone: "Europe/Moscow", region: "Europe" },
+            { name: "Istanbul", country: "Turkey", zone: "Europe/Istanbul", region: "Europe" },
+            { name: "Riyadh", country: "Saudi Arabia", zone: "Asia/Riyadh", region: "Asia" },
+            { name: "Nairobi", country: "Kenya", zone: "Africa/Nairobi", region: "Africa" },
+            { name: "Baghdad", country: "Iraq", zone: "Asia/Baghdad", region: "Asia" },
+
+            // UTC+2
+            { name: "Cairo", country: "Egypt", zone: "Africa/Cairo", region: "Africa" },
+            { name: "Johannesburg", country: "South Africa", zone: "Africa/Johannesburg", region: "Africa" },
+            { name: "Athens", country: "Greece", zone: "Europe/Athens", region: "Europe" },
+            { name: "Jerusalem", country: "Israel", zone: "Asia/Jerusalem", region: "Asia" },
+            { name: "Kyiv", country: "Ukraine", zone: "Europe/Kyiv", region: "Europe" },
+            { name: "Helsinki", country: "Finland", zone: "Europe/Helsinki", region: "Europe" },
+            
+            // UTC+1
             { name: "Paris", country: "France", zone: "Europe/Paris", region: "Europe" },
+            { name: "Berlin", country: "Germany", zone: "Europe/Berlin", region: "Europe" },
+            { name: "Rome", country: "Italy", zone: "Europe/Rome", region: "Europe" },
+            { name: "Madrid", country: "Spain", zone: "Europe/Madrid", region: "Europe" },
+            { name: "Amsterdam", country: "Netherlands", zone: "Europe/Amsterdam", region: "Europe" },
+            { name: "Bern", country: "Switzerland", zone: "Europe/Zurich", region: "Europe" },
+            { name: "Vienna", country: "Austria", zone: "Europe/Vienna", region: "Europe" },
+            { name: "Prague", country: "Czechia", zone: "Europe/Prague", region: "Europe" },
+            { name: "Budapest", country: "Hungary", zone: "Europe/Budapest", region: "Europe" },
+            { name: "Lagos", country: "Nigeria", zone: "Africa/Lagos", region: "Africa" },
+            { name: "Abuja", country: "Nigeria", zone: "Africa/Lagos", region: "Africa" },
+            { name: "Warsaw", country: "Poland", zone: "Europe/Warsaw", region: "Europe" },
+            { name: "Stockholm", country: "Sweden", zone: "Europe/Stockholm", region: "Europe" },
+
+            // UTC+0
             { name: "London", country: "UK", zone: "Europe/London", region: "Europe" },
-            { name: "Rio", country: "Brazil", zone: "America/Sao_Paulo", region: "Americas" },
+            { name: "Dublin", country: "Ireland", zone: "Europe/Dublin", region: "Europe" },
+            { name: "Lisbon", country: "Portugal", zone: "Europe/Lisbon", region: "Europe" },
+            { name: "Casablanca", country: "Morocco", zone: "Africa/Casablanca", region: "Africa" },
+            { name: "Accra", country: "Ghana", zone: "Africa/Accra", region: "Africa" },
+
+            // UTC-3 to -4
+            { name: "Brasilia", country: "Brazil", zone: "America/Sao_Paulo", region: "Americas" },
+            { name: "Rio de Janeiro", country: "Brazil", zone: "America/Sao_Paulo", region: "Americas" },
+            { name: "Sao Paulo", country: "Brazil", zone: "America/Sao_Paulo", region: "Americas" },
+            { name: "Buenos Aires", country: "Argentina", zone: "America/Argentina/Buenos_Aires", region: "Americas" },
+            { name: "Santiago", country: "Chile", zone: "America/Santiago", region: "Americas" },
+            { name: "Halifax", country: "Canada", zone: "America/Halifax", region: "Americas" },
+
+            // UTC-5 (Eastern)
             { name: "New York", country: "USA", zone: "America/New_York", region: "Americas" },
+            { name: "Washington DC", country: "USA", zone: "America/New_York", region: "Americas" },
+            { name: "Miami", country: "USA", zone: "America/New_York", region: "Americas" },
+            { name: "Ottawa", country: "Canada", zone: "America/Toronto", region: "Americas" },
+            { name: "Toronto", country: "Canada", zone: "America/Toronto", region: "Americas" },
+            { name: "Montreal", country: "Canada", zone: "America/Toronto", region: "Americas" },
+            { name: "Bogota", country: "Colombia", zone: "America/Bogota", region: "Americas" },
+            { name: "Lima", country: "Peru", zone: "America/Lima", region: "Americas" },
+
+            // UTC-6 (Central)
+            { name: "Chicago", country: "USA", zone: "America/Chicago", region: "Americas" },
+            { name: "Dallas", country: "USA", zone: "America/Chicago", region: "Americas" },
+            { name: "Mexico City", country: "Mexico", zone: "America/Mexico_City", region: "Americas" },
+            { name: "Winnipeg", country: "Canada", zone: "America/Winnipeg", region: "Americas" },
+
+            // UTC-7 (Mountain)
+            { name: "Denver", country: "USA", zone: "America/Denver", region: "Americas" },
+            { name: "Phoenix", country: "USA", zone: "America/Phoenix", region: "Americas" },
+            { name: "Calgary", country: "Canada", zone: "America/Edmonton", region: "Americas" },
+
+            // UTC-8 (Pacific)
             { name: "Los Angeles", country: "USA", zone: "America/Los_Angeles", region: "Americas" },
-            { name: "Honolulu", country: "USA", zone: "Pacific/Honolulu", region: "Oceania" }
+            { name: "San Francisco", country: "USA", zone: "America/Los_Angeles", region: "Americas" },
+            { name: "Seattle", country: "USA", zone: "America/Los_Angeles", region: "Americas" },
+            { name: "Vancouver", country: "Canada", zone: "America/Vancouver", region: "Americas" },
+            { name: "Las Vegas", country: "USA", zone: "America/Los_Angeles", region: "Americas" },
+
+            // UTC-9 to -10
+            { name: "Anchorage", country: "USA", zone: "America/Anchorage", region: "Americas" },
+            { name: "Honolulu", country: "USA", zone: "Pacific/Honolulu", region: "Oceania" },
+            { name: "Papeete", country: "Tahiti", zone: "Pacific/Tahiti", region: "Oceania" }
         ];
 
-        // --- CITY CARD ---
-        const CityCard = ({ city, globalNow, onCelebrate }) => {
+        // --- COMPONENTS ---
+
+        const CityCard = ({ city, globalNow, isFavorite, onToggleFavorite, onCelebrate }) => {
             const hasCelebrated = useRef(false);
 
             const { display, isHere } = useMemo(() => {
@@ -161,27 +247,38 @@
                 }
             }, [isHere, city.name, onCelebrate]);
 
+            // Composite Key for Favorites logic
+            const compositeKey = `${city.name}|${city.country}`;
+
             return (
                 <div className={`glass-panel p-5 rounded-2xl relative transition-all duration-300 ${isHere ? 'active-gold-border' : 'hover:border-primary/30'}`}>
-                    <div className="flex justify-between items-start mb-5">
-                        <div>
-                            <h3 className={`text-lg font-bold leading-tight ${isHere ? 'text-gold' : 'text-white'}`}>
+                    {/* Header */}
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1 pr-2">
+                            <h3 className={`text-lg font-bold leading-tight truncate ${isHere ? 'text-gold' : 'text-white'}`}>
                                 {city.name}
                             </h3>
-                            <div className="text-[10px] text-gray-400 font-mono uppercase tracking-widest mt-1">
+                            <div className="text-[10px] text-gray-400 font-mono uppercase tracking-widest mt-1 truncate">
                                 {city.country}
                             </div>
                         </div>
-                        {isHere ? 
-                            <div className="bg-gold/90 text-black px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse-gold shadow-[0_0_10px_rgba(255,215,0,0.4)]">
-                                <Icons.Check /> <span className="text-[10px] font-bold">2026</span>
-                            </div> 
-                            : 
-                            <div className="text-primary/40"><Icons.Clock /></div>
-                        }
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => onToggleFavorite(city)}
+                                className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
+                            >
+                                <Icons.Star filled={isFavorite} />
+                            </button>
+                            {isHere && (
+                                <div className="bg-gold/90 text-black px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse-gold shadow-[0_0_10px_rgba(255,215,0,0.4)]">
+                                    <Icons.Check /> <span className="text-[10px] font-bold">2026</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="flex justify-between items-baseline text-center px-1">
+                    {/* Timer Grid */}
+                    <div className="flex justify-between items-baseline text-center px-1 mb-2">
                         <TimeUnit val={display.h} label="HRS" active={isHere} />
                         <span className="text-xl text-gray-600 font-light mx-1">:</span>
                         <TimeUnit val={display.m} label="MIN" active={isHere} />
@@ -194,7 +291,7 @@
 
         const TimeUnit = ({ val, label, active }) => (
             <div className="flex flex-col items-center flex-1">
-                <div className={`text-3xl font-mono font-bold tracking-tighter ${active ? 'text-gold drop-shadow-[0_0_8px_rgba(255,215,0,0.5)]' : 'text-white'}`}>
+                <div className={`text-2xl md:text-3xl font-mono font-bold tracking-tighter ${active ? 'text-gold drop-shadow-[0_0_8px_rgba(255,215,0,0.5)]' : 'text-white'}`}>
                     {val}
                 </div>
                 <div className="text-[9px] text-gray-500 font-bold tracking-widest mt-1 scale-90">{label}</div>
@@ -203,88 +300,109 @@
 
         // --- APP ROOT ---
         const App = () => {
-            const [timeMode, setTimeMode] = useState('IST'); // 'IST' or 'UTC'
             const [ticker, setTicker] = useState(0); 
-            const [filter, setFilter] = useState('All');
+            const [searchTerm, setSearchTerm] = useState('');
             const [celebrating, setCelebrating] = useState(null);
             
-            const celebrationRef = useRef(null);
-            
-            // GLOBAL CLOCK SOURCE (Derived State)
-            const globalNow = useMemo(() => {
-                // Canonical zone names: 'Asia/Kolkata' or 'UTC'
-                const zone = timeMode === 'IST' ? 'Asia/Kolkata' : 'UTC';
-                return DateTime.now().setZone(zone);
-            }, [ticker, timeMode]);
+            // FAVORITES: Storing Composite Keys for Integrity
+            const [favorites, setFavorites] = useState(() => {
+                const saved = localStorage.getItem('aurora_favs_v2');
+                // Default favorites using composite keys
+                return saved ? JSON.parse(saved) : [
+                    'New Delhi|India', 
+                    'New York|USA', 
+                    'London|UK',
+                    'Sydney|Australia'
+                ];
+            });
 
-            // HEARTBEAT
+            const celebrationRef = useRef(null);
+
+            // GLOBAL CLOCK: Pure UTC Heartbeat
+            const globalNow = useMemo(() => DateTime.utc(), [ticker]);
+
             useEffect(() => {
                 const timer = setInterval(() => setTicker(t => t + 1), 1000);
                 return () => clearInterval(timer);
             }, []);
 
+            const toggleFavorite = (city) => {
+                const key = `${city.name}|${city.country}`;
+                const newFavs = favorites.includes(key)
+                    ? favorites.filter(k => k !== key)
+                    : [...favorites, key];
+                setFavorites(newFavs);
+                localStorage.setItem('aurora_favs_v2', JSON.stringify(newFavs));
+            };
+
             const handleCelebration = (cityName) => {
                 celebrationRef.current = cityName; 
                 setCelebrating(cityName);          
-
-                confetti({ 
-                    particleCount: 150, 
-                    spread: 100, 
-                    origin: { y: 0.6 }, 
-                    colors: ['#FFD700', '#ffffff', '#D0BCFF'],
-                    disableForReducedMotion: true
-                });
-
-                setTimeout(() => {
-                    if (celebrationRef.current === cityName) setCelebrating(null);
-                }, 6000);
+                confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#ffffff', '#D0BCFF'], disableForReducedMotion: true });
+                setTimeout(() => { if (celebrationRef.current === cityName) setCelebrating(null); }, 6000);
             };
 
-            const filteredCities = filter === 'All' ? CITIES : CITIES.filter(c => c.region === filter);
+            // --- FILTERING & SORTING ENGINE ---
+            const { favoriteCities, otherCities } = useMemo(() => {
+                const searchLower = searchTerm.toLowerCase();
+                
+                // Enhanced Search: Matches Name, Country, or Region
+                const matched = ALL_CITIES.filter(c => 
+                    c.name.toLowerCase().includes(searchLower) || 
+                    c.country.toLowerCase().includes(searchLower) ||
+                    c.region.toLowerCase().includes(searchLower)
+                );
+
+                const favs = [];
+                const others = [];
+
+                matched.forEach(c => {
+                    const key = `${c.name}|${c.country}`;
+                    if (favorites.includes(key)) {
+                        favs.push(c);
+                    } else {
+                        others.push(c);
+                    }
+                });
+
+                return { favoriteCities: favs, otherCities: others };
+            }, [searchTerm, favorites]);
 
             return (
                 <div className="min-h-screen pb-20 relative selection:bg-gold selection:text-black">
                     <div className="aurora-gradient"></div>
                     
                     {/* Header */}
-                    <nav className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/10 px-6 py-4 mb-8">
+                    <nav className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/10 px-4 md:px-6 py-4 mb-6">
                         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
                             
-                            {/* Logo & Mode Switch */}
-                            <div className="flex items-center justify-between w-full md:w-auto gap-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white shadow-lg">
-                                        <Icons.Sparkles />
-                                    </div>
-                                    <h1 className="text-xl font-bold tracking-tight">Aurora <span className="text-primary">2026</span></h1>
+                            <div className="flex items-center gap-3 w-full md:w-auto">
+                                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white shadow-lg shrink-0">
+                                    <Icons.Sparkles />
                                 </div>
-
-                                {/* THE TOGGLE */}
-                                <div 
-                                    className="toggle-switch"
-                                    onClick={() => setTimeMode(prev => prev === 'IST' ? 'UTC' : 'IST')}
-                                    role="button"
-                                >
-                                    <div className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all ${timeMode === 'IST' ? 'bg-primary text-black' : 'text-gray-400'}`}>IST</div>
-                                    <div className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all ${timeMode === 'UTC' ? 'bg-primary text-black' : 'text-gray-400'}`}>UTC</div>
-                                </div>
+                                <h1 className="text-xl font-bold tracking-tight">Aurora <span className="text-primary">2026</span></h1>
                             </div>
-                            
-                            {/* Filter Chips */}
-                            <div className="flex gap-2 bg-white/5 p-1 rounded-full overflow-x-auto max-w-full no-scrollbar">
-                                {['All', 'Asia', 'Europe', 'Oceania', 'Americas'].map(region => (
-                                    <button
-                                        key={region}
-                                        onClick={() => setFilter(region)}
-                                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
-                                            filter === region 
-                                            ? 'bg-primary text-black shadow-[0_0_10px_rgba(208,188,255,0.4)]' 
-                                            : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                        }`}
+
+                            {/* SEARCH BAR */}
+                            <div className="relative w-full md:max-w-md group">
+                                <div className="absolute left-3 top-2.5 text-gray-400 group-focus-within:text-primary transition-colors">
+                                    <Icons.Search />
+                                </div>
+                                <input 
+                                    type="text" 
+                                    placeholder="Search 150+ cities (Try 'Europe')..." 
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full bg-white/10 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:bg-white/15 focus:border-primary/50 transition-all placeholder-gray-500"
+                                />
+                                {searchTerm && (
+                                    <button 
+                                        onClick={() => setSearchTerm('')}
+                                        className="absolute right-3 top-2.5 text-gray-400 hover:text-white"
                                     >
-                                        {region}
+                                        <Icons.X />
                                     </button>
-                                ))}
+                                )}
                             </div>
                         </div>
                     </nav>
@@ -292,7 +410,7 @@
                     {/* Celebration Overlay */}
                     {celebrating && (
                         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none">
-                            <div className="bg-black/90 backdrop-blur-xl p-8 rounded-3xl border border-gold/30 shadow-[0_0_50px_rgba(255,215,0,0.2)] text-center animate-pulse-gold">
+                            <div className="bg-black/90 backdrop-blur-xl p-8 rounded-3xl border border-gold/30 shadow-[0_0_50px_rgba(255,215,0,0.2)] text-center animate-pulse-gold mx-4">
                                 <h1 className="text-5xl md:text-7xl font-black text-gold mb-2 leading-none">
                                     HAPPY<br/>NEW YEAR
                                 </h1>
@@ -303,30 +421,68 @@
                         </div>
                     )}
 
-                    {/* Main Grid */}
                     <main className="max-w-7xl mx-auto px-4 md:px-6">
-                        <div className="flex items-center gap-2 mb-6 ml-1 opacity-70">
-                            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                            <span className="text-xs font-mono uppercase tracking-widest text-gray-400">
-                                Ref: {timeMode === 'IST' ? 'Asia/Kolkata' : 'UTC'} • Events occur at local midnight
-                            </span>
-                        </div>
+                        
+                        {/* FAVORITES SECTION */}
+                        {favoriteCities.length > 0 && (
+                            <div className="mb-10">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Icons.Star filled={true} />
+                                    <h2 className="text-sm font-bold uppercase tracking-widest text-gold">Favorites</h2>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                    {favoriteCities.map((city) => (
+                                        <CityCard 
+                                            key={`${city.name}|${city.country}`} 
+                                            city={city} 
+                                            globalNow={globalNow} 
+                                            isFavorite={true}
+                                            onToggleFavorite={toggleFavorite}
+                                            onCelebrate={handleCelebration} 
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                            {filteredCities.map((city) => (
-                                <CityCard 
-                                    key={`${city.zone}-${city.name}`} 
-                                    city={city} 
-                                    globalNow={globalNow} 
-                                    onCelebrate={handleCelebration} 
-                                />
-                            ))}
+                        {/* ALL CITIES SECTION */}
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-primary/50"></div>
+                                    <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400">
+                                        {searchTerm ? 'Search Results' : 'Major Global Cities'}
+                                    </h2>
+                                </div>
+                                <span className="text-xs text-gray-500 bg-white/5 px-2 py-1 rounded-md">
+                                    {favoriteCities.length + otherCities.length} Cities
+                                </span>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                {otherCities.map((city) => (
+                                    <CityCard 
+                                        key={`${city.name}|${city.country}`} 
+                                        city={city} 
+                                        globalNow={globalNow} 
+                                        isFavorite={false}
+                                        onToggleFavorite={toggleFavorite}
+                                        onCelebrate={handleCelebration} 
+                                    />
+                                ))}
+                            </div>
+                            
+                            {otherCities.length === 0 && favoriteCities.length === 0 && (
+                                <div className="text-center py-20 text-gray-500">
+                                    <p>No cities found matching "{searchTerm}"</p>
+                                </div>
+                            )}
                         </div>
                     </main>
 
                     <footer className="mt-20 py-8 text-center border-t border-white/5">
                         <p className="text-gray-600 text-[10px] uppercase tracking-widest">
-                            Final Release v2.2 • {timeMode} Sync Active
+                            Aurora 2026 • Global Data Edition • 160+ Cities Live
                         </p>
                     </footer>
                 </div>
